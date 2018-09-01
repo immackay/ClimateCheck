@@ -1,0 +1,41 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+dir <- "./csv"
+downloadClimateData <- function(dir, station, begin, end, timeframe) {
+  for (year in begin:end) {
+    for (month in 1:12) {
+      day <- 14 # arbitrary
+      downloadUrl <- paste("http://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv",
+                         "&stationID=", station,
+                         "&Year=", year,
+                         "&Month=", month,
+                         "&Day=", day,
+                         "&timeframe=", timeframe,
+                         "&submit= Download+Data",
+                         sep="")
+      sDir <- paste(dir, station, year, sep="/")
+      sDir <- paste(sDir, "/", sep="")
+      if (!dir.exists(sDir)) {
+        dir.create(sDir, recursive = TRUE)
+      }
+      destUrl <- paste(sDir, "/", month, ".csv", sep="")
+      if (file.exists(destUrl)) {
+        print(paste("File already exists -", destUrl))
+      } else {
+        download.file(downloadUrl, destUrl, method = "wget", quiet = TRUE, extra = "--content-disposition")
+        print(paste("Successfully downloaded y", year, "m", month))
+      }
+    }
+  }
+}
+downloadClimateData(dir, 1731, 1953, 2006, 1)
+```
+
+```{r}
+df <- read.csv("./csv/station1731/1953-1.csv", header=TRUE, skip=15)
+plot(df$Date.Time, df$Temp...C., type="l")
+```
