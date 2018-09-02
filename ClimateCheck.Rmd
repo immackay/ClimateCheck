@@ -4,8 +4,7 @@ output: html_notebook
 ---
 
 ```{r}
-dir <- "./csv"
-downloadClimateData <- function(dir, station, begin, end, timeframe) {
+downloadClimateData <- function(station, begin, end, timeframe) {
   for (year in begin:end) {
     for (month in 1:12) {
       day <- 14 # arbitrary
@@ -17,7 +16,7 @@ downloadClimateData <- function(dir, station, begin, end, timeframe) {
                          "&timeframe=", timeframe,
                          "&submit= Download+Data",
                          sep="")
-      sDir <- paste(dir, station, year, sep="/")
+      sDir <- paste(".", "csv", station, year, sep="/")
       sDir <- paste(sDir, "/", sep="")
       if (!dir.exists(sDir)) {
         dir.create(sDir, recursive = TRUE)
@@ -32,10 +31,95 @@ downloadClimateData <- function(dir, station, begin, end, timeframe) {
     }
   }
 }
-downloadClimateData(dir, 1731, 1953, 2006, 1)
+compileFiles <- function(station, begin, end, overwrite=F) {
+  for (year in begin:end) {
+    firstUrl <- paste(paste(".", "csv", station, year, sep="/"), "csv", sep=".")
+    for (month in 1:12) {
+      url <- paste(".", "csv", station, year, month, sep="/")
+      url <- paste(url, ".csv", sep="")
+      if (month == 1) {
+        file.copy(url, firstUrl, overwrite=overwrite)
+      } else {
+        tempFile <- read.csv(paste("./csv/1731/", year, "/", month, ".csv", sep=""), header=TRUE, skip=15)
+        tempUrl <- paste(".", "csv", station, year, month, sep="/")
+        tempUrl <- paste(url, "temp.csv", sep="")
+        write.table(tempFile, file=tempUrl, sep=",", col.names=F, row.names=F)
+        file.append(firstUrl, tempUrl)
+        file.remove(tempUrl)
+      }
+    }
+  }
+}
+loadFile <- function(station, year) {
+  df <- read.csv(paste("./csv/", station, "/", year, ".csv", sep=""), header=TRUE, skip=15)
+  dataFrame <- data.frame(df$Date.Time, 
+                          format(as.POSIXct(df$Date), "%m-%d"), df$Temp...C.)
+  colnames(dataFrame) <- c("Date", "MD", "TempC")
+  lastKnown <- NA
+  backProp <- 1
+  for (checkTemp in seq_along(dataFrame$TempC)) {
+    if (is.na(dataFrame$TempC[checkTemp])) {
+      if (is.na(lastKnown)) {
+        backProp <- backProp + 1
+      } else {
+        dataFrame$TempC[checkTemp] <- lastKnown
+      }
+    } else {
+      if (is.na(lastKnown)) {
+        dataFrame$TempC[1:backProp] <- dataFrame$TempC[checkTemp]
+      }
+      lastKnown <- dataFrame$TempC[checkTemp]
+    }
+  }
+  dataFrame
+}
+plotYears <- function(station, years=NA, begin=NA, end=NA) {
+  if (!is.na(begin) && !is.na(end)) {
+    years <- begin:end
+  }
+  
+  if (is.na(years)) {
+    return("You must provide years to plot!")
+  }
+  p <- NA
+  for (year in years) {
+    temp <- loadFile(station, year)
+    if (is.na(p)) {
+      p <- plot_ly(data=temp, x=~MD, y=~TempC, type="scatter", mode="lines")
+    } else {
+      p <- add_trace(p, data=temp, x=~MD, y=~TempC, mode="lines")
+    }
+  }
+  p
+}
 ```
 
 ```{r}
-df <- read.csv("./csv/station1731/1953-1.csv", header=TRUE, skip=15)
-plot(df$Date.Time, df$Temp...C., type="l")
+#downloadClimateData(1731, 1953, 2006, 1)
+compileFiles(1731, 1953, 2006, T)
+#plot(df$Date.Time, df$Temp...C., type="l")
 ```
+
+```{r}
+#install.packages("plotly")
+library(plotly)
+```
+
+```{r}
+dataFrame <- loadFile(1731, 1953)
+dataFrame2 <- loadFile(1731, 2005)
+plot_ly(x=dataFrame$MD, y=dataFrame$TempC, type="scatter", mode="lines", line = list(color = 'rgb(205, 12, 24)')) %>%
+  add_trace(x=dataFrame2$MD, y=dataFrame2$TempC, mode="lines", line = list(color = 'rgb(40, 40, 240)'))
+```
+
+```{r}
+p <- plotYears(1731, years=c(1953, 2005))
+p
+```
+
+```{r}
+differences <- dataFrame2$TempC - dataFrame$TempC
+plot(differences, type = "l")
+abline(h=mean(differences))
+```
+
