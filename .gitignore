@@ -1,2 +1,5 @@
+csv
 ./csv/*
 .Rhistory
+.DS_Store
+*.nb.html
