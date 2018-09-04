@@ -73,21 +73,22 @@ loadFile <- function(station, year) {
   }
   dataFrame
 }
-plotYears <- function(station, years=NA, begin=NA, end=NA) {
-  if (!is.na(begin) && !is.na(end)) {
+plotYears <- function(station, years=NA, begin=NA, end=NA, mode="MD") {
+  if (!(is.na(begin) & is.na(end))) {
     years <- begin:end
   }
-  
-  if (is.na(years)) {
+  if (anyNA(years)) {
     return("You must provide years to plot!")
   }
   p <- NA
   for (year in years) {
     temp <- loadFile(station, year)
-    if (is.na(p)) {
-      p <- plot_ly(data=temp, x=~MD, y=~TempC, type="scatter", mode="lines")
+    if (anyNA(p)) {
+      if (mode=="MD") p <- plot_ly(data=temp, x=~MD, y=~TempC, type="scatter", mode="lines", name=year)
+      if (mode=="Date") p <- plot_ly(data=temp, x=~Date, y=~TempC, type="scatter", mode="lines", name=year)
     } else {
-      p <- add_trace(p, data=temp, x=~MD, y=~TempC, mode="lines")
+      if (mode=="MD") p <- add_trace(p, data=temp, x=~MD, y=~TempC, mode="lines", name=year)
+      if (mode=="Date") p <- add_trace(p, data=temp, x=~Date, y=~TempC, mode="lines", name=year)
     }
   }
   p
@@ -96,30 +97,16 @@ plotYears <- function(station, years=NA, begin=NA, end=NA) {
 
 ```{r}
 #downloadClimateData(1731, 1953, 2006, 1)
-compileFiles(1731, 1953, 2006, T)
-#plot(df$Date.Time, df$Temp...C., type="l")
-```
-
-```{r}
+#compileFiles(1731, 1953, 2006, T)
 #install.packages("plotly")
 library(plotly)
 ```
 
 ```{r}
-dataFrame <- loadFile(1731, 1953)
-dataFrame2 <- loadFile(1731, 2005)
-plot_ly(x=dataFrame$MD, y=dataFrame$TempC, type="scatter", mode="lines", line = list(color = 'rgb(205, 12, 24)')) %>%
-  add_trace(x=dataFrame2$MD, y=dataFrame2$TempC, mode="lines", line = list(color = 'rgb(40, 40, 240)'))
+plotYears(1731, years=c(1953, 1984, 2005))
 ```
 
 ```{r}
-p <- plotYears(1731, years=c(1953, 2005))
-p
-```
-
-```{r}
-differences <- dataFrame2$TempC - dataFrame$TempC
-plot(differences, type = "l")
-abline(h=mean(differences))
+plotYears(1731, years=c(1953:1973), mode="Date")
 ```
 
