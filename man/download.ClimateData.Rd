@@ -8,13 +8,24 @@ download.ClimateData(station, begin, end, timeframe = c("hourly",
   "daily", "monthly"), method = c("curl", "wget"))
 }
 \arguments{
-\item{method}{}
-}
-\value{
-data.frame with numeral vectors where possible
+\item{station}{to download}
+
+\item{begin}{year}
+
+\item{end}{year}
+
+\item{timeframe}{of station/datastream}
+
+\item{method}{curl or wget}
 }
 \description{
-Base utility for Climate Bulk Data fetching
+Download climate data from \code{begin}:\code{end}
+\code{station} is provided by Station.ID in stations.csv
+\code{timeframe} is either \code{"hourly"}, \code{"daily"}, or \code{"monthly"}
+}
+\details{
+wget is the \emph{supported} utility but curl works fine
+and is more accessible on all systems
 }
 \examples{
 \donttest{
@@ -23,4 +34,8 @@ begin <- 2014
 end <- 2017
 df <- download.ClimateData(51423, begin, end, "hourly", "curl")
 }
+}
+\references{
+\url{ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Get_More_Data_Plus_de_donnees/Readme.txt}
+\url{ftp://ftp.tor.ec.gc.ca/Pub/Get_More_Data_Plus_de_donnees/Station\%20Inventory\%20EN.csv}
 }

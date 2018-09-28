@@ -1,9 +1,3 @@
-# Information can be found here: 
-# ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Get_More_Data_Plus_de_donnees/
-
-
-
-
 #' Base utility for Climate Bulk Data fetching
 #'
 #' Download climate data from \code{begin}:\code{end}
@@ -13,15 +7,15 @@
 #' wget is the \emph{supported} utility but curl works fine
 #' and is more accessible on all systems
 #'
-#' @param station
-#' @param begin
-#' @param end
-#' @param timeframe
-#' @param method
+#' @param station to download
+#' @param begin year
+#' @param end year
+#' @param timeframe of station/datastream
+#' @param method curl or wget
 #'
 #' @references
 #' \url{ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Get_More_Data_Plus_de_donnees/Readme.txt}
-#' \url{ftp://ftp.tor.ec.gc.ca/Pub/Get_More_Data_Plus_de_donnees/Station%20Inventory%20EN.csv}
+#' \url{ftp://ftp.tor.ec.gc.ca/Pub/Get_More_Data_Plus_de_donnees/Station\%20Inventory\%20EN.csv}
 #'
 #' @export
 #'
@@ -69,8 +63,8 @@ download.ClimateData <- function(station, begin, end, timeframe=c("hourly", "dai
 #' See \code{\link{download.ClimateData}} for available timeframes
 #' See \code{stations.csv} (\code{\link{read.ClimateStationList}}) for available Station IDs
 #'
-#' @param stations
-#' @param timeframe
+#' @param stations to download
+#' @param timeframe of stations/datastreams
 #' @export
 download.ClimateDataStations <- function(stations, timeframe) {
   
@@ -80,7 +74,7 @@ download.ClimateDataStations <- function(stations, timeframe) {
 #'
 #' See \code{\link{download.ClimateData}} for available timeframes
 #'
-#' @param timeframe
+#' @param timeframe of station/datastream
 #' @export
 download.ClimateDataAll <- function(timeframe) {
   
@@ -88,10 +82,10 @@ download.ClimateDataAll <- function(timeframe) {
 
 #' Compile all files for \code{station} into year-by-year .csv files
 #'
-#' @param station
-#' @param begin
-#' @param end
-#' @param overwrite
+#' @param station to compile
+#' @param begin year
+#' @param end year
+#' @param overwrite T/F rewrite files
 #' @export
 compile.ClimateData <- function(station, begin, end, overwrite=F) {
   # check if file exists
@@ -132,7 +126,7 @@ read.ClimateStationList <- function() {
 
 #' Read the header information for \code{station}
 #'
-#' @param station
+#' @param station to load header
 #' @export
 read.ClimateHeader <- function(station) {
   baseUrl <- paste("./csv", station, sep="/")
@@ -151,8 +145,8 @@ read.ClimateHeader <- function(station) {
 #'
 #' Must run \code{\link{compile.ClimateData}} first
 #'
-#' @param station
-#' @param year
+#' @param station to read data
+#' @param year of compiled csv
 #' @export
 read.ClimateCSV <- function(station, year) {
   # check if file exists
