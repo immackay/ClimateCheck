@@ -14,7 +14,30 @@
 #
 # wget is the "supported" utility but curl works fine
 # and is more accessible on all systems
-download.ClimateData <- function(station, begin, end, timeframe, method="curl") {
+
+#' Base utility for Climate Bulk Data fetching
+#'
+#' @param station
+#' @param begin
+#' @param end
+#' @param timeframe
+#' @param method
+#'
+#' @references
+#' \url{ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Get_More_Data_Plus_de_donnees/Readme.txt}
+#' \url{ftp://ftp.tor.ec.gc.ca/Pub/Get_More_Data_Plus_de_donnees/Station%20Inventory%20EN.csv}
+#'
+#' @export
+#'
+#' @examples
+#' \donttest{
+#' # Station 51423 is KAMLOOPS A
+#' begin <- 2014
+#' end <- 2017
+#' df <- download.ClimateData(51423, begin, end, "hourly", "curl")
+#' }
+download.ClimateData <- function(station, begin, end, timeframe=c("hourly", "daily", "monthly"), method=c("curl", "wget")) {
+  # check for nulls
   for (year in begin:end) {
     for (month in 1:12) {
       day <- 14 # arbitrary, will always download full month
@@ -84,7 +107,7 @@ compile.ClimateData <- function(station, begin, end, overwrite=F) {
 # Read the station list
 read.ClimateStationList <- function() {
   if (!file.exists("stations.csv"))
-    return("Download the newest Station Inventory! See Util.R")
+    stop("Download the newest Station Inventory! See Util.R")
   df <- read.csv("stations.csv", skip=3)
   df
 }
@@ -99,7 +122,7 @@ read.ClimateHeader <- function(station) {
     df
   } else {
     # download 1 dataset?
-    return("Station not found!")
+    stop("Station not found!")
   }
 }
 

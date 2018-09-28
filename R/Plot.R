@@ -9,7 +9,7 @@ plot.Climate <- function(station, years=NA, begin=NA, end=NA, mode="MD") {
     years <- begin:end
   }
   if (anyNA(years)) {
-    return("You must provide years to plot!")
+    stop("You must provide years to plot!")
   }
   p <- NA
   for (year in years) {
