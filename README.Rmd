@@ -1,5 +1,5 @@
 ---
-title: "Canada Climate Data Checker"
+title: "PlotlyClimateCA Readme"
 output: html_notebook
 ---
 

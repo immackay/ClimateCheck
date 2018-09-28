@@ -4,7 +4,15 @@
 
 require(plotly)
 
-plot.Climate <- function(station, years=NA, begin=NA, end=NA, mode="MD") {
+#' Plot the temperature on a time-series graph
+#'
+#' @param station
+#' @param years
+#' @param begin
+#' @param end
+#' @param mode
+#' @export
+plot.Climate <- function(station, years=NA, begin=NA, end=NA, mode=c("MD", "Date")) {
   if (!(is.na(begin) & is.na(end))) {
     years <- begin:end
   }
@@ -33,9 +41,27 @@ plot.Climate <- function(station, years=NA, begin=NA, end=NA, mode="MD") {
   p <- layout(p, title=testTitle)
   p
 }
+
+#' Plot the temperature on an animation
+#'
+#' @param station
+#' @param years
+#' @param begin
+#' @param end
+#' @param mode
+#' @export
 plot.ClimateAnimation <- function() {
   
 }
+
+#' Plot the temperature on a map
+#'
+#' @param station
+#' @param years
+#' @param begin
+#' @param end
+#' @param mode
+#' @export
 plot.ClimateMap <- function() {
   
 }
