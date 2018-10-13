@@ -2,7 +2,7 @@
 % Please edit documentation in R/Util.R
 \name{download.ClimateData}
 \alias{download.ClimateData}
-\title{Base utility for Climate Bulk Data fetching}
+\title{Base utility for Bulk Climate Data fetching}
 \usage{
 download.ClimateData(station, begin, end, timeframe = c("hourly",
   "daily", "monthly"), method = c("curl", "wget"))

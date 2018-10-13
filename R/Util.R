@@ -1,4 +1,4 @@
-#' Base utility for Climate Bulk Data fetching
+#' Base utility for Bulk Climate Data fetching
 #'
 #' Download climate data from \code{begin}:\code{end}
 #' \code{station} is provided by Station.ID in stations.csv
@@ -27,7 +27,7 @@
 #' df <- download.ClimateData(51423, begin, end, "hourly", "curl")
 #' }
 download.ClimateData <- function(station, begin, end, timeframe=c("hourly", "daily", "monthly"), method=c("curl", "wget")) {
-  # check for nulls
+  # TODO check for nulls
   for (year in begin:end) {
     for (month in 1:12) {
       day <- 14 # arbitrary, will always download full month
@@ -36,7 +36,7 @@ download.ClimateData <- function(station, begin, end, timeframe=c("hourly", "dai
                            "&Year=", year,
                            "&Month=", month,
                            "&Day=", day,
-                           "&timeframe=", timeframe,
+                           "&timeframe=", switch(timeframe, hourly=1, daily=2, monthly=3),
                            "&submit=%20Download+Data",
                            sep="")
       sDir <- paste(".", "csv", station, year, sep="/")
@@ -47,10 +47,11 @@ download.ClimateData <- function(station, begin, end, timeframe=c("hourly", "dai
       if (file.exists(destUrl)) {
         print(paste("File already exists -", destUrl))
       } else {
+        print(downloadUrl)
         if (method=="curl") {
-          download.file(downloadUrl, destUrl, method = "curl", quiet = TRUE, extra = "-L")
+          download.file(downloadUrl, destUrl, method, quiet = TRUE, extra = "-L")
         } else {
-          download.file(downloadUrl, destUrl, method = "wget", quiet = TRUE, extra = "--content-disposition")
+          download.file(downloadUrl, destUrl, method, quiet = TRUE, extra = "--content-disposition")
         }
         print(paste("Successfully downloaded y", year, "m", month))
       }
@@ -67,7 +68,10 @@ download.ClimateData <- function(station, begin, end, timeframe=c("hourly", "dai
 #' @param timeframe of stations/datastreams
 #' @export
 download.ClimateDataStations <- function(stations, timeframe) {
-  
+  for (station in stations) {
+    stationList <- read.ClimateStationList()
+    
+  }
 }
 
 #' Download all available data for the specified \code{timeframe}
@@ -87,8 +91,8 @@ download.ClimateDataAll <- function(timeframe) {
 #' @param end year
 #' @param overwrite T/F rewrite files
 #' @export
-compile.ClimateData <- function(station, begin, end, overwrite=F) {
-  # check if file exists
+cdata.Compile <- function(station, begin, end, overwrite=F) {
+  # TODO check if file exists
   
   for (year in begin:end) {
     firstUrl <- paste(paste(".", "csv", station, year, sep="/"), "csv", sep=".")
@@ -98,6 +102,7 @@ compile.ClimateData <- function(station, begin, end, overwrite=F) {
       if (month == 1) {
         file.copy(url, firstUrl, overwrite=overwrite)
       } else {
+        # TODO only download data that exists
         tempFile <- read.csv(paste(paste(".", "csv", station, year, month, sep="/"), "csv", sep="."), header=TRUE, skip=15)
         tempUrl <- paste(".", "csv", station, year, month, sep="/")
         tempUrl <- paste(url, "temp.csv", sep="")
@@ -109,10 +114,43 @@ compile.ClimateData <- function(station, begin, end, overwrite=F) {
   }
 }
 
+cdata.Accumulate <- function(dat, var, split=24) {
+  var <- lazyeval::f_eval(var, dat)       # find the var
+  lvls <- plotly:::getLevels(var)         # get levels of var
+  dats <- lapply(seq(1, length(lvls)/split), function(x) { # apply from 1:levels
+    cbind(dat[var %in% lvls[seq(1, x*split)], ], Frame = factor(lvls[[x*split]])) # may need (x-1)*24
+  })
+  print("Done accumulation!")
+  dplyr::bind_rows(dats)
+}
+
+cdata.RemoveEvery <- function(data, var, n) {
+  
+}
+
+cdata.RollingMean <- function(dat, prev=NA, var, back=4) {
+  require(zoo)
+  dat <- lazyeval::f_eval(var, dat)
+  if (is.na(prev)) {
+    temp <- zoo::rollmean(dat, back)
+    return(c(rep(temp[[1]], back-1), temp))
+  } else {
+    prev <- lazyeval::f_eval(var, prev)
+    a <- prev[!(1:back)]
+    print(length(a))
+    temp <- zoo::rollmean(c(prev, dat), back)
+    return(temp)
+  }
+}
+
+cdata.WipeCache <- function() {
+  
+}
+
 #' Read the station list
 #'
 #' Station inventory is located here if you need to update it:
-#' \url{ftp://ftp.tor.ec.gc.ca/Pub/Get_More_Data_Plus_de_donnees/Station%20Inventory%20EN.csv}
+#' \url{ftp://ftp.tor.ec.gc.ca/Pub/Get_More_Data_Plus_de_donnees/Station\%20Inventory\%20EN.csv}
 #' Sometimes acts down if navigated to directly, thus why there's no download function
 #' Save it as \code{stations.csv} in this folder
 #'
@@ -136,7 +174,7 @@ read.ClimateHeader <- function(station) {
     df <- data.frame(t(data.frame(read.csv(paste(baseUrl, possibleUrl, sep="/"), header=FALSE)[1:8,], row.names=1)))
     df
   } else {
-    # download 1 dataset?
+    # TODO download 1 dataset?
     stop("Station not found!")
   }
 }
@@ -149,7 +187,7 @@ read.ClimateHeader <- function(station) {
 #' @param year of compiled csv
 #' @export
 read.ClimateCSV <- function(station, year) {
-  # check if file exists
+  # TODO check if file exists 
   df <- read.csv(paste("./csv/", station, "/", year, ".csv", sep=""), header=TRUE, skip=15)
   dataFrame <- data.frame(df$Date.Time, 
                           format(as.POSIXct(df$Date), "%m-%d"), df$Temp...C.)

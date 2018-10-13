@@ -7,5 +7,8 @@
 read.ClimateStationList()
 }
 \description{
-Read the station list
+Station inventory is located here if you need to update it:
+\url{ftp://ftp.tor.ec.gc.ca/Pub/Get_More_Data_Plus_de_donnees/Station\%20Inventory\%20EN.csv}
+Sometimes acts down if navigated to directly, thus why there's no download function
+Save it as \code{stations.csv} in this folder
 }

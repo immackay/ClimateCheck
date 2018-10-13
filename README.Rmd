@@ -4,22 +4,24 @@ output: html_notebook
 ---
 
 ```{r}
-source("Util.R")
-source("Plot.R")
-station <- 51423
-begin <- 2013
-end <- 2018
-#download.ClimateData(station, begin, end, 1, T)
-#compile.ClimateData(station, begin, end, T)
-#install.packages("plotly")
-#library(plotly)
+require(devtools)
+require(plotly)
+devtools::load_all()
+station <- 1706
+begin <- 1998
+end <- 2008
+download.ClimateData(station, begin, end, "hourly", "wget")
+cdata.Compile(station, begin, end, T)
 ```
 
 ```{r}
-plot.Climate(station, years=c(begin:end))
+plot.Climate(station, years=2013:2018, FUN=function(x, y=NA) {cdata.RollingMean(x, y, var=~TempC, back=24*30)})
 ```
 
 ```{r}
-plot.Climate(station, years=c(begin:end), mode="Date")
+plot.Climate(station, mode="Date", years=2018)
 ```
 
+```{r}
+p <- plot.ClimateAnimation(station, years=2017, accumulate=24*30)
+```
